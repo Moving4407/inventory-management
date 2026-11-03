@@ -35,6 +35,11 @@ recent_transactions = load_json_file('transactions.json')
 # Load purchase orders
 purchase_orders = load_json_file('purchase_orders.json')
 
+# Restocking orders submitted at runtime. Intentionally in-memory only (resets on
+# restart) and kept separate from orders.json so existing order filters and
+# dashboard totals are unaffected.
+submitted_orders = []
+
 # User tasks created via the Tasks modal. In-memory only (resets on restart).
 tasks = []
 
