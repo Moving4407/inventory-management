@@ -6,6 +6,7 @@ export default {
     orders: 'Orders',
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
+    restocking: 'Restocking',
     companyName: 'Catalyst Components',
     subtitle: 'Inventory Management System'
   },
@@ -112,6 +113,20 @@ export default {
     onTimeDelivery: 'On-Time Delivery',
     itemsCount: '{count} items',
     quantity: 'Qty',
+    submittedOrders: {
+      title: 'Submitted Orders',
+      description: 'Restocking orders placed from the Restocking tab',
+      empty: 'No restocking orders have been submitted yet',
+      orderId: 'Order ID',
+      submittedOn: 'Submitted',
+      items: 'Items',
+      total: 'Total Cost',
+      leadTime: 'Lead Time',
+      leadTimeDays: '{days} days',
+      expectedDelivery: 'Expected Delivery',
+      status: 'Status',
+      submitted: 'Submitted'
+    },
     table: {
       orderNumber: 'Order Number',
       orderId: 'Order ID',
@@ -168,6 +183,36 @@ export default {
   },
 
   // Demand Forecast
+  restocking: {
+    title: 'Restocking',
+    description: 'Set a budget and restock items with rising forecasted demand',
+    budget: 'Available Budget',
+    budgetHint: 'Drag to set the budget. Recommendations update automatically.',
+    recommendations: 'Recommended Items',
+    empty: 'No items can be restocked with this budget',
+    sku: 'SKU',
+    item: 'Item',
+    trend: 'Trend',
+    demandGap: 'Demand Gap',
+    quantity: 'Quantity',
+    unitCost: 'Unit Cost',
+    lineTotal: 'Line Total',
+    leadTime: 'Lead Time',
+    leadTimeDays: '{days} days',
+    supplier: 'Supplier',
+    totalCost: 'Total Cost',
+    remainingBudget: 'Remaining Budget',
+    longestLeadTime: 'Delivery Lead Time',
+    placeOrder: 'Place Order',
+    placing: 'Placing order...',
+    confirmTitle: 'Confirm Restocking Order',
+    confirmMessage: 'Submit this order for {count} items?',
+    confirm: 'Confirm Order',
+    cancel: 'Cancel',
+    error: 'Failed to load recommendations',
+    orderError: 'Failed to place the order. Please try again.'
+  },
+
   demand: {
     title: 'Demand Forecast',
     description: 'Analyze demand trends and forecasts',

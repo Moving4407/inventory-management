@@ -75,6 +75,63 @@
         </div>
       </div>
     </div>
+
+    <!-- Independent of the orders list: stays visible while it loads or if it fails -->
+    <div class="card submitted-orders">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">{{ t('orders.submittedOrders.title') }} ({{ submittedOrders.length }})</h3>
+          <p class="card-description">{{ t('orders.submittedOrders.description') }}</p>
+        </div>
+      </div>
+      <div v-if="submittedError" class="error">{{ submittedError }}</div>
+      <div v-else-if="submittedLoading" class="loading">{{ t('common.loading') }}</div>
+      <div v-else-if="submittedOrders.length === 0" class="empty-state">
+        {{ t('orders.submittedOrders.empty') }}
+      </div>
+      <div v-else class="table-container">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th class="col-order-number">{{ t('orders.submittedOrders.orderId') }}</th>
+              <th class="col-date">{{ t('orders.submittedOrders.submittedOn') }}</th>
+              <th class="col-items">{{ t('orders.submittedOrders.items') }}</th>
+              <th class="col-value">{{ t('orders.submittedOrders.total') }}</th>
+              <th class="col-lead">{{ t('orders.submittedOrders.leadTime') }}</th>
+              <th class="col-date">{{ t('orders.submittedOrders.expectedDelivery') }}</th>
+              <th class="col-status">{{ t('orders.submittedOrders.status') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="order in submittedOrders" :key="order.id">
+              <td class="col-order-number"><strong>{{ order.id }}</strong></td>
+              <td class="col-date">{{ formatDate(order.created_date) }}</td>
+              <td class="col-items">
+                <details class="items-details">
+                  <summary class="items-summary">
+                    {{ t('orders.itemsCount', { count: order.items.length }) }}
+                  </summary>
+                  <div class="items-dropdown">
+                    <div v-for="item in order.items" :key="item.item_sku" class="item-entry">
+                      <span class="item-name">{{ translateProductName(item.item_name) }}</span>
+                      <span class="item-meta">{{ t('orders.quantity') }}: {{ item.quantity }}</span>
+                    </div>
+                  </div>
+                </details>
+              </td>
+              <td class="col-value"><strong>{{ formatMoney(order.total_cost) }}</strong></td>
+              <td class="col-lead">
+                <span class="lead-time">{{ t('orders.submittedOrders.leadTimeDays', { days: order.lead_time_days }) }}</span>
+              </td>
+              <td class="col-date">{{ formatDate(order.expected_delivery_date) }}</td>
+              <td class="col-status">
+                <span class="badge info">{{ t('orders.submittedOrders.submitted') }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -83,6 +140,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { api } from '../api'
 import { useFilters } from '../composables/useFilters'
 import { useI18n } from '../composables/useI18n'
+import { formatCurrencyWithDecimals } from '../utils/currency'
 
 export default {
   name: 'Orders',
@@ -95,6 +153,9 @@ export default {
     const loading = ref(true)
     const error = ref(null)
     const orders = ref([])
+    const submittedOrders = ref([])
+    const submittedLoading = ref(true)
+    const submittedError = ref(null)
 
     // Use shared filters
     const {
@@ -153,9 +214,35 @@ export default {
       })
     }
 
-    onMounted(loadOrders)
+    // Submitted orders are independent of FilterBar filters and have their own
+    // error handling so a failure here never breaks the main orders table.
+    const loadSubmittedOrders = async () => {
+      try {
+        submittedLoading.value = true
+        submittedError.value = null
+        const result = await api.getSubmittedOrders()
+        submittedOrders.value = Array.isArray(result) ? result : []
+      } catch (err) {
+        submittedError.value = 'Failed to load submitted orders'
+        console.error('Submitted orders load error:', err)
+      } finally {
+        submittedLoading.value = false
+      }
+    }
+
+    // Submitted order amounts are USD; convert to JPY when that currency is selected
+    const formatMoney = (amount) => formatCurrencyWithDecimals(amount, currentCurrency.value, 2)
+
+    onMounted(() => {
+      loadOrders()
+      loadSubmittedOrders()
+    })
 
     return {
+      submittedOrders,
+      submittedLoading,
+      submittedError,
+      formatMoney,
       t,
       loading,
       error,
@@ -201,6 +288,38 @@ export default {
 
 .col-value {
   width: 120px;
+}
+
+.col-lead {
+  width: 120px;
+}
+
+.submitted-orders {
+  margin-top: 1.5rem;
+}
+
+.card-description {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Lead time pill so the column stands out from dates */
+.lead-time {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 0.813rem;
 }
 
 /* Items details styling */
